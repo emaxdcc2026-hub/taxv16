@@ -1,0 +1,48 @@
+{
+  "id": "./index.html",
+  "name": "Tax Refund, Currency & Installment Calculator",
+  "short_name": "Tax & FX",
+  "description": "Calculate 5% x 81% VAT tax refunds, live currency conversions, and 3 to 12 month installment plans.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "categories": ["finance", "utilities", "shopping"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "690x690",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "690x690",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "690x690",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshot-mobile.png",
+      "sizes": "679x1054",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of tax refund, currency converter, and numpad"
+    }
+  ]
+}
