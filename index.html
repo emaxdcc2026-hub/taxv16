@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Tax Refund, FX & Installments</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" sizes="any" href="./icon.svg" />
+  <link rel="icon" type="image/png" sizes="690x690" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="690x690" href="./icon-512.png" />
+  <link rel="apple-touch-icon" sizes="690x690" href="./icon-192.png" />
+  <style>
+    :root {
+      --bg-overlay: rgba(15, 23, 42, 0.88);
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --secondary: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #0f172a;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: var(--bg-overlay);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .icon-btn:active { transform: scale(0.96); }
+
+    .display-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .currency-badge {
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: var(--secondary);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    #amountDisplay {
+      font-size: 2.1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      overflow-x: auto;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric-box {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .metric-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--card-bg);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--secondary);
+      color: #fff;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      max-height: 175px;
+      overflow-y: auto;
+    }
+
+    .hidden { display: none !important; }
+
+    .fx-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .fx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .fx-item:last-child { border-bottom: none; }
+
+    .installment-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .inst-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .inst-months {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .inst-amt {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-top: 2px;
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .num-btn {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      color: var(--text-main);
+      font-size: 1.45rem;
+      font-weight: 700;
+      padding: 14px 0;
+      border-radius: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .num-btn:active {
+      transform: translateY(2px);
+      background: #334155;
+    }
+
+    .num-btn.action {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      font-size: 1.15rem;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .modal {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      padding: 18px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    select, input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip button {
+      background: none;
+      border: none;
+      color: #f87171;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .calc-display {
+      width: 100%;
+      background: #0f172a;
+      padding: 14px;
+      border-radius: 10px;
+      text-align: right;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .calc-btn {
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .calc-btn.op { background: #334155; color: #38bdf8; }
+    .calc-btn.eq { background: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <header>
+    <h1 id="appTitle">Tax & FX Assistant</h1>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="openCalcModal()" title="Calculator">🧮 <span id="calcBtnLabel">Calc</span></button>
+      <button class="icon-btn" onclick="openSettingsModal()" title="Settings">⚙️ <span id="settingsBtnLabel">Settings</span></button>
+    </div>
+  </header>
+
+  <div class="display-card">
+    <div class="input-row">
+      <span class="currency-badge" id="baseCurrencyBadge">AED</span>
+      <div id="amountDisplay">0</div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="metric-label" id="taxRefundLabel">Tax Refund (5% × 81%)</div>
+        <div class="metric-value" id="taxRefundValue">0.00</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label" id="netCostLabel">Net After Refund</div>
+        <div class="metric-value" style="color:#f8fafc;" id="netCostValue">0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabFxBtn" onclick="switchTab('fx')">🌍 Currency Converter</button>
+    <button class="tab-btn" id="tabInstBtn" onclick="switchTab('inst')">📅 Installment Plan</button>
+  </div>
+
+  <div class="panel" id="fxPanel">
+    <div class="fx-header">
+      <span id="fxSourceText">Market Rates (Google Finance Feed)</span>
+      <button onclick="fetchRates(true)" style="background:none;border:none;color:#38bdf8;cursor:pointer;font-weight:600;">↻ Sync</button>
+    </div>
+    <div id="fxList"></div>
+  </div>
+
+  <div class="panel hidden" id="instPanel">
+    <div class="fx-header">
+      <span id="instHeaderText">0% Monthly Installment Breakdown</span>
+    </div>
+    <div class="installment-grid" id="installmentGrid"></div>
+  </div>
+
+  <div class="numpad">
+    <button class="num-btn" onclick="pressNum('1')">1</button>
+    <button class="num-btn" onclick="pressNum('2')">2</button>
+    <button class="num-btn" onclick="pressNum('3')">3</button>
+    <button class="num-btn" onclick="pressNum('4')">4</button>
+    <button class="num-btn" onclick="pressNum('5')">5</button>
+    <button class="num-btn" onclick="pressNum('6')">6</button>
+    <button class="num-btn" onclick="pressNum('7')">7</button>
+    <button class="num-btn" onclick="pressNum('8')">8</button>
+    <button class="num-btn" onclick="pressNum('9')">9</button>
+    <button class="num-btn" onclick="pressNum('.')">.</button>
+    <button class="num-btn" onclick="pressNum('0')">0</button>
+    <button class="num-btn action" onclick="pressBackspace()">⌫</button>
+    <button class="num-btn action" style="grid-column: span 3; padding: 10px;" onclick="pressClear()" id="clearBtnLabel">CLEAR</button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-backdrop hidden" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="settingsModalTitle">Settings</h3>
+      <button class="icon-btn" onclick="closeSettingsModal()">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label id="langLabel">Language</label>
+      <select id="langSelect" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="ar">العربية (Arabic)</option>
+        <option value="hi">हिन्दी (Hindi)</option>
+        <option value="tl">Tagalog</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label id="baseCurrLabel">Base Currency</label>
+      <select id="baseCurrencySelect" onchange="changeBaseCurrency(this.value)">
+        <option value="AED">AED - UAE Dirham</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="EUR">EUR - Euro</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="SAR">SAR - Saudi Riyal</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label id="addCountryLabel">Add Target Country / Currency</label>
+      <div style="display:flex; gap:6px;">
+        <select id="countryPicker">
+          <option value="USD|🇺🇸 USA (USD)">🇺🇸 USA (USD)</option>
+          <option value="EUR|🇪🇺 Europe (EUR)">🇪🇺 Europe (EUR)</option>
+          <option value="GBP|🇬🇧 UK (GBP)">🇬🇧 UK (GBP)</option>
+          <option value="INR|🇮🇳 India (INR)">🇮🇳 India (INR)</option>
+          <option value="PHP|🇵🇭 Philippines (PHP)">🇵🇭 Philippines (PHP)</option>
+          <option value="SAR|🇸🇦 Saudi Arabia (SAR)">🇸🇦 Saudi Arabia (SAR)</option>
+          <option value="KWD|🇰🇼 Kuwait (KWD)">🇰🇼 Kuwait (KWD)</option>
+          <option value="QAR|🇶🇦 Qatar (QAR)">🇶🇦 Qatar (QAR)</option>
+          <option value="OMR|🇴🇲 Oman (OMR)">🇴🇲 Oman (OMR)</option>
+          <option value="BHD|🇧🇭 Bahrain (BHD)">🇧🇭 Bahrain (BHD)</option>
+          <option value="EGP|🇪🇬 Egypt (EGP)">🇪🇬 Egypt (EGP)</option>
+          <option value="PKR|🇵🇰 Pakistan (PKR)">🇵🇰 Pakistan (PKR)</option>
+          <option value="JPY|🇯🇵 Japan (JPY)">🇯🇵 Japan (JPY)</option>
+          <option value="CNY|🇨🇳 China (CNY)">🇨🇳 China (CNY)</option>
+          <option value="RUB|🇷🇺 Russia (RUB)">🇷🇺 Russia (RUB)</option>
+        </select>
+        <button class="icon-btn" style="background:var(--accent);" onclick="addCountry()">+ Add</button>
+      </div>
+      <div class="chip-list" id="activeCountriesList"></div>
+    </div>
+
+    <div class="form-group">
+      <label id="bgUploadLabel">Custom Background Image</label>
+      <input type="file" accept="image/*" onchange="uploadBackground(event)" />
+      <button class="icon-btn" style="margin-top:8px; width:100%; justify-content:center;" onclick="resetBackground()" id="resetBgBtn">Reset Default Background</button>
+    </div>
+
+    <button class="btn-primary" onclick="closeSettingsModal()" id="doneBtnLabel">Done</button>
+  </div>
+</div>
+
+<!-- Calculator Modal -->
+<div class="modal-backdrop hidden" id="calcModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="calcModalTitle">Calculator</h3>
+      <button class="icon-btn" onclick="closeCalcModal()">✕</button>
+    </div>
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-grid">
+      <button class="calc-btn op" onclick="calcInput('C')">C</button>
+      <button class="calc-btn op" onclick="calcInput('(')">(</button>
+      <button class="calc-btn op" onclick="calcInput(')')">)</button>
+      <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+
+      <button class="calc-btn" onclick="calcInput('7')">7</button>
+      <button class="calc-btn" onclick="calcInput('8')">8</button>
+      <button class="calc-btn" onclick="calcInput('9')">9</button>
+      <button class="calc-btn op" onclick="calcInput('*')">×</button>
+
+      <button class="calc-btn" onclick="calcInput('4')">4</button>
+      <button class="calc-btn" onclick="calcInput('5')">5</button>
+      <button class="calc-btn" onclick="calcInput('6')">6</button>
+      <button class="calc-btn op" onclick="calcInput('-')">−</button>
+
+      <button class="calc-btn" onclick="calcInput('1')">1</button>
+      <button class="calc-btn" onclick="calcInput('2')">2</button>
+      <button class="calc-btn" onclick="calcInput('3')">3</button>
+      <button class="calc-btn op" onclick="calcInput('+')">+</button>
+
+      <button class="calc-btn" onclick="calcInput('0')">0</button>
+      <button class="calc-btn" onclick="calcInput('.')">.</button>
+      <button class="calc-btn eq" onclick="calcEval()">=</button>
+      <button class="calc-btn op" style="background:var(--secondary);color:#fff;font-size:0.8rem;" onclick="useCalcResult()">USE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentInput = "0";
+  let baseCurrency = localStorage.getItem("baseCurrency") || "AED";
+  let currentLang = localStorage.getItem("appLang") || "en";
+  let targetCountries = JSON.parse(localStorage.getItem("targetCountries")) || [
+    { code: "USD", label: "🇺🇸 USA (USD)" },
+    { code: "EUR", label: "🇪🇺 Europe (EUR)" },
+    { code: "GBP", label: "🇬🇧 UK (GBP)" },
+    { code: "INR", label: "🇮🇳 India (INR)" },
+    { code: "PHP", label: "🇵🇭 Philippines (PHP)" },
+    { code: "SAR", label: "🇸🇦 Saudi Arabia (SAR)" }
+  ];
+  let exchangeRates = JSON.parse(localStorage.getItem("cachedRates")) || {
+    AED: 1, USD: 0.27229, EUR: 0.251, GBP: 0.214, INR: 22.85, PHP: 15.85, SAR: 1.021
+  };
+
+  const installmentMonths = [3, 4, 6, 8, 9, 12];
+
+  const translations = {
+    en: {
+      appTitle: "Tax & FX Assistant",
+      calcBtn: "Calc",
+      settingsBtn: "Settings",
+      taxRefund: "Tax Refund (5% × 81%)",
+      netCost: "Net After Refund",
+      tabFx: "🌍 Currency Converter",
+      tabInst: "📅 Installment Plan",
+      clear: "CLEAR",
+      months: "Months",
+      perMo: "/mo"
+    },
+    ar: {
+      appTitle: "مساعد الضرائب والعملات",
+      calcBtn: "حاسبة",
+      settingsBtn: "الإعدادات",
+      taxRefund: "استرداد الضريبة (5% × 81%)",
+      netCost: "الصافي بعد الاسترداد",
+      tabFx: "🌍 محول العملات",
+      tabInst: "📅 خطة التقسيط",
+      clear: "مسح",
+      months: "أشهر",
+      perMo: "/شهر"
+    },
+    hi: {
+      appTitle: "टैक्स और मुद्रा सहायक",
+      calcBtn: "कैलकुलेटर",
+      settingsBtn: "सेटिंग्स",
+      taxRefund: "टैक्स रिफंड (5% × 81%)",
+      netCost: "रिफंड के बाद कुल",
+      tabFx: "🌍 मुद्रा परिवर्तक",
+      tabInst: "📅 किस्त योजना",
+      clear: "साफ़ करें",
+      months: "महीने",
+      perMo: "/माह"
+    },
+    tl: {
+      appTitle: "Tax & FX Assistant",
+      calcBtn: "Kalkyuleytor",
+      settingsBtn: "Settings",
+      taxRefund: "Tax Refund (5% × 81%)",
+      netCost: "Net Pagkatapos ng Refund",
+      tabFx: "🌍 Palitan ng Pera",
+      tabInst: "📅 Hulugan (Installment)",
+      clear: "BURAHIN",
+      months: "Buwan",
+      perMo: "/buwan"
+    }
+  };
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedBg = localStorage.getItem("customBg");
+    if (savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
+    document.getElementById("langSelect").value = currentLang;
+    document.getElementById("baseCurrencySelect").value = baseCurrency;
+    applyLanguage();
+    renderCountryChips();
+    fetchRates(false);
+    recalculateAll();
+  });
+
+  async function fetchRates(forceAlert) {
+    try {
+      const res = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
+      const data = await res.json();
+      if (data && data.rates) {
+        exchangeRates = data.rates;
+        localStorage.setItem("cachedRates", JSON.stringify(exchangeRates));
+        document.getElementById("fxSourceText").textContent = `Live Google Finance Feed (${baseCurrency})`;
+        recalculateAll();
+        if (forceAlert) alert("Exchange rates updated!");
+      }
+    } catch (e) {
+      document.getElementById("fxSourceText").textContent = "Offline Mode (Cached Rates)";
+    }
+  }
+
+  function pressNum(digit) {
+    if (digit === "." && currentInput.includes(".")) return;
+    if (currentInput === "0" && digit !== ".") {
+      currentInput = digit;
+    } else {
+      if (currentInput.length < 12) currentInput += digit;
+    }
+    recalculateAll();
+  }
+
+  function pressBackspace() {
+    currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : "0";
+    recalculateAll();
+  }
+
+  function pressClear() {
+    currentInput = "0";
+    recalculateAll();
+  }
+
+  function recalculateAll() {
+    const val = parseFloat(currentInput) || 0;
+    document.getElementById("amountDisplay").textContent = currentInput;
+    document.getElementById("baseCurrencyBadge").textContent = baseCurrency;
+
+    const taxRefund = val * 0.05 * 0.81;
+    const netCost = val - taxRefund;
+
+    document.getElementById("taxRefundValue").textContent = `${taxRefund.toFixed(2)} ${baseCurrency}`;
+    document.getElementById("netCostValue").textContent = `${netCost.toFixed(2)} ${baseCurrency}`;
+
+    renderFxList(val);
+    renderInstallments(val);
+  }
+
+  function renderFxList(amount) {
+    const list = document.getElementById("fxList");
+    list.innerHTML = "";
+    targetCountries.forEach(c => {
+      const rate = exchangeRates[c.code] || 0;
+      const converted = (amount * rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const row = document.createElement("div");
+      row.className = "fx-item";
+      row.innerHTML = `
+        <span>${c.label}</span>
+        <strong>${converted} ${c.code}</strong>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function renderInstallments(amount) {
+    const grid = document.getElementById("installmentGrid");
+    const t = translations[currentLang];
+    grid.innerHTML = "";
+    installmentMonths.forEach(m => {
+      const monthly = (amount / m).toFixed(2);
+      const card = document.createElement("div");
+      card.className = "inst-card";
+      card.innerHTML = `
+        <div class="inst-months">${m} ${t.months}</div>
+        <div class="inst-amt">${monthly}</div>
+        <div style="font-size:0.65rem;color:#94a3b8;">${baseCurrency}${t.perMo}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function switchTab(tab) {
+    document.getElementById("tabFxBtn").classList.toggle("active", tab === "fx");
+    document.getElementById("tabInstBtn").classList.toggle("active", tab === "inst");
+    document.getElementById("fxPanel").classList.toggle("hidden", tab !== "fx");
+    document.getElementById("instPanel").classList.toggle("hidden", tab !== "inst");
+  }
+
+  function openSettingsModal() { document.getElementById("settingsModal").classList.remove("hidden"); }
+  function closeSettingsModal() { document.getElementById("settingsModal").classList.add("hidden"); }
+
+  function changeLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem("appLang", lang);
+    applyLanguage();
+    recalculateAll();
+  }
+
+  function applyLanguage() {
+    const t = translations[currentLang];
+    document.body.dir = currentLang === "ar" ? "rtl" : "ltr";
+    document.getElementById("appTitle").textContent = t.appTitle;
+    document.getElementById("calcBtnLabel").textContent = t.calcBtn;
+    document.getElementById("settingsBtnLabel").textContent = t.settingsBtn;
+    document.getElementById("taxRefundLabel").textContent = t.taxRefund;
+    document.getElementById("netCostLabel").textContent = t.netCost;
+    document.getElementById("tabFxBtn").textContent = t.tabFx;
+    document.getElementById("tabInstBtn").textContent = t.tabInst;
+    document.getElementById("clearBtnLabel").textContent = t.clear;
+  }
+
+  function changeBaseCurrency(curr) {
+    baseCurrency = curr;
+    localStorage.setItem("baseCurrency", curr);
+    fetchRates(false);
+    recalculateAll();
+  }
+
+  function addCountry() {
+    const val = document.getElementById("countryPicker").value;
+    const [code, label] = val.split("|");
+    if (!targetCountries.some(c => c.code === code)) {
+      targetCountries.push({ code, label });
+      localStorage.setItem("targetCountries", JSON.stringify(targetCountries));
+      renderCountryChips();
+      recalculateAll();
+    }
+  }
+
+  function removeCountry(code) {
+    targetCountries = targetCountries.filter(c => c.code !== code);
+    localStorage.setItem("targetCountries", JSON.stringify(targetCountries));
+    renderCountryChips();
+    recalculateAll();
+  }
+
+  function renderCountryChips() {
+    const container = document.getElementById("activeCountriesList");
+    container.innerHTML = "";
+    targetCountries.forEach(c => {
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      chip.innerHTML = `${c.code} <button onclick="removeCountry('${c.code}')">×</button>`;
+      container.appendChild(chip);
+    });
+  }
+
+  function uploadBackground(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      localStorage.setItem("customBg", e.target.result);
+      document.body.style.backgroundImage = `url(${e.target.result})`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetBackground() {
+    localStorage.removeItem("customBg");
+    document.body.style.backgroundImage = "none";
+  }
+
+  let calcExpr = "";
+  function openCalcModal() { document.getElementById("calcModal").classList.remove("hidden"); }
+  function closeCalcModal() { document.getElementById("calcModal").classList.add("hidden"); }
+
+  function calcInput(ch) {
+    if (ch === "C") {
+      calcExpr = "";
+      document.getElementById("calcDisplay").textContent = "0";
+      return;
+    }
+    calcExpr += ch;
+    document.getElementById("calcDisplay").textContent = calcExpr;
+  }
+
+  function calcEval() {
+    try {
+      const result = Function(`"use strict";return (${calcExpr})`)();
+      calcExpr = String(Number(result.toFixed(4)));
+      document.getElementById("calcDisplay").textContent = calcExpr;
+    } catch {
+      document.getElementById("calcDisplay").textContent = "Error";
+      calcExpr = "";
+    }
+  }
+
+  function useCalcResult() {
+    calcEval();
+    if (calcExpr && !isNaN(calcExpr)) {
+      currentInput = calcExpr;
+      recalculateAll();
+      closeCalcModal();
+    }
+  }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(err => console.log("SW error:", err));
+    });
+  }
+</script>
+</body>
+</html>
